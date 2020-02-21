@@ -1,4 +1,4 @@
-import Ruler from "./Ruler.js";
+import Ruler from "./ruler.js";
 import { onReady } from "./dom.js";
 
 /** Class for FontFaceObserver. */
@@ -80,10 +80,10 @@ class FontFaceObserver {
    *
    * @return {boolean}
    */
-  static hasSafari10Bug() {
+  static hasSafari10Bug(context) {
     if (FontFaceObserver.HAS_SAFARI_10_BUG === null) {
       if (
-        FontFaceObserver.supportsNativeFontLoading() &&
+        FontFaceObserver.supportsNativeFontLoading(context) &&
         /Apple/.test(FontFaceObserver.getNavigatorVendor())
       ) {
         const match = /AppleWebKit\/([0-9]+)(?:\.([0-9]+))(?:\.([0-9]+))/.exec(
@@ -104,9 +104,9 @@ class FontFaceObserver {
    *
    * @return {boolean}
    */
-  static supportsNativeFontLoading() {
+  static supportsNativeFontLoading(context) {
     if (FontFaceObserver.SUPPORTS_NATIVE_FONT_LOADING === null) {
-      FontFaceObserver.SUPPORTS_NATIVE_FONT_LOADING = !!document["fonts"];
+      FontFaceObserver.SUPPORTS_NATIVE_FONT_LOADING = !!context.document["fonts"];
     }
     return FontFaceObserver.SUPPORTS_NATIVE_FONT_LOADING;
   }
@@ -143,12 +143,13 @@ class FontFaceObserver {
    * (optional). The object can contain `weight`, `style`, and `stretch`
    * properties. If a property is not present it will default to `normal`.
    */
-  constructor(family, descriptors = {}) {
+  constructor(family, descriptors = {}, opt_context) {
     this.family = family;
 
     this.style = descriptors.style || "normal";
     this.weight = descriptors.weight || "normal";
     this.stretch = descriptors.stretch || "normal";
+    this.context = opt_context || window;
 
     return this;
   }
@@ -169,8 +170,8 @@ class FontFaceObserver {
 
     return new Promise(function(resolve, reject) {
       if (
-        FontFaceObserver.supportsNativeFontLoading() &&
-        !FontFaceObserver.hasSafari10Bug()
+        FontFaceObserver.supportsNativeFontLoading(that.context) &&
+        !FontFaceObserver.hasSafari10Bug(that.context)
       ) {
         const loader = new Promise(function(resolve, reject) {
           const check = function() {
@@ -179,7 +180,7 @@ class FontFaceObserver {
             if (now - start >= timeoutValue) {
               reject(new Error("" + timeoutValue + "ms timeout exceeded"));
             } else {
-              document.fonts
+              that.context.document.fonts
                 .load(that.getStyle('"' + that["family"] + '"'), testString)
                 .then(function(fonts) {
                   if (fonts.length >= 1) {
@@ -296,7 +297,7 @@ class FontFaceObserver {
           container.appendChild(rulerB.getElement());
           container.appendChild(rulerC.getElement());
 
-          document.body.appendChild(container);
+          that.context.document.body.appendChild(container);
 
           fallbackWidthA = rulerA.getWidth();
           fallbackWidthB = rulerB.getWidth();
@@ -309,7 +310,7 @@ class FontFaceObserver {
               removeContainer();
               reject(new Error("" + timeoutValue + "ms timeout exceeded"));
             } else {
-              const hidden = document["hidden"];
+              const hidden = that.context.document["hidden"];
               if (hidden === true || hidden === undefined) {
                 widthA = rulerA.getWidth();
                 widthB = rulerB.getWidth();

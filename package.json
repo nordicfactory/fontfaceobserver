@@ -1,16 +1,16 @@
 {
-  "name": "fontfaceobserver-es",
-  "version": "3.3.1",
+  "name": "@bannerflow/fontfaceobserver",
+  "version": "1.0.0",
   "description": "Detect if web fonts are available",
   "directories": {
     "test": "test"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dmnsgn/fontfaceobserver.git"
+    "url": "git+https://github.com/nordicfactory/fontfaceobserver.git"
   },
   "bugs": {
-    "url": "https://github.com/dmnsgn/fontfaceobserver/issues"
+    "url": "https://github.com/nordicfactory/fontfaceobserver/issues"
   },
   "homepage": "https://fontfaceobserver.com/",
   "main": "dist/fontfaceobserver.cjs.js",

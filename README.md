@@ -1,3 +1,6 @@
+# NOTE
+This is a forked repo
+
 # Font Face Observer
 
 [![Build Status](https://travis-ci.org/dmnsgn/fontfaceobserver.svg?branch=master)](https://travis-ci.org/dmnsgn/fontfaceobserver)

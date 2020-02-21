@@ -1,14 +1,14 @@
-describe("Observer", function() {
+describe("Observer", function () {
   var Ruler = FontFaceObserver.Ruler;
 
-  describe("#constructor", function() {
-    it("creates a new instance with the correct signature", function() {
+  describe("#constructor", function () {
+    it("creates a new instance with the correct signature", function () {
       var observer = new FontFaceObserver("my family", {});
       expect(observer, "not to be", null);
       expect(observer.load, "to be a function");
     });
 
-    it("parses descriptors", function() {
+    it("parses descriptors", function () {
       var observer = new FontFaceObserver("my family", {
         weight: "bold"
       });
@@ -17,17 +17,24 @@ describe("Observer", function() {
       expect(observer.weight, "to equal", "bold");
     });
 
-    it("defaults descriptors that are not given", function() {
+    it("defaults descriptors that are not given", function () {
       var observer = new FontFaceObserver("my family", {
         weight: "bold"
       });
 
       expect(observer.style, "to equal", "normal");
     });
+
+    it('defaults context to current window', function () {
+      var observer = new FontFaceObserver('my family', {});
+      console.log(observer)
+
+      expect(observer.context, 'to equal', window);
+    });
   });
 
-  describe("#getStyle", function() {
-    it("creates the correct default style", function() {
+  describe("#getStyle", function () {
+    it("creates the correct default style", function () {
       var observer = new FontFaceObserver("my family", {});
 
       if (FontFaceObserver.supportStretch()) {
@@ -45,7 +52,7 @@ describe("Observer", function() {
       }
     });
 
-    it("passes through all descriptors", function() {
+    it("passes through all descriptors", function () {
       var observer = new FontFaceObserver("my family", {
         style: "italic",
         weight: "bold",
@@ -68,10 +75,10 @@ describe("Observer", function() {
     });
   });
 
-  describe("#load", function() {
+  describe("#load", function () {
     this.timeout(5000);
 
-    it("finds a font and resolve the promise", function(done) {
+    it("finds a font and resolve the promise", function (done) {
       var observer = new FontFaceObserver("observer-test1", {});
       var ruler = new Ruler("hello");
 
@@ -82,12 +89,12 @@ describe("Observer", function() {
 
       ruler.setFont("100px observer-test1, monospace");
       observer.load(null, 5000).then(
-        function() {
+        function () {
           var activeWidth = ruler.getWidth();
 
           expect(activeWidth, "not to equal", beforeWidth);
 
-          setTimeout(function() {
+          setTimeout(function () {
             var afterWidth = ruler.getWidth();
 
             expect(afterWidth, "to equal", activeWidth);
@@ -96,13 +103,58 @@ describe("Observer", function() {
             done();
           }, 0);
         },
-        function() {
+        function () {
           done(new Error("Timeout"));
         }
       );
     });
 
-    it("finds a font and resolves the promise even though the @font-face rule is not in the CSSOM yet", function(done) {
+    it('finds a font and resolve the promise in an iframe (context)', function (done) {
+      var iframe = document.createElement('iframe');
+      iframe.style.position = 'fixed';
+      iframe.style.left = '-9999px';
+      document.body.appendChild(iframe);
+
+      // Can't just load a local HTML file, because under file:// we wouldn't
+      // be able to interact with it due to same-origin policy
+      var style = iframe.contentWindow.document.createElement('style');
+      style.textContent =
+        "@font-face {" +
+        "  font-family: observer-test1;" +
+        "  src: url(assets/sourcesanspro-regular.woff) format('woff')," +
+        "       url(assets/sourcesanspro-regular.ttf) format('truetype');" +
+        "}";
+      iframe.contentWindow.document.head.appendChild(style);
+
+      var observer = new FontFaceObserver('observer-test1', {}, iframe.contentWindow),
+        ruler = new Ruler('hello');
+
+      iframe.contentWindow.document.body.appendChild(ruler.getElement());
+
+      ruler.setFont('monospace', '');
+      var beforeWidth = ruler.getWidth();
+
+      ruler.setFont('100px observer-test1, monospace');
+      observer.load(null, 5000).then(function () {
+        var activeWidth = ruler.getWidth();
+
+        expect(activeWidth, 'not to equal', beforeWidth);
+
+        setTimeout(function () {
+          var afterWidth = ruler.getWidth();
+
+          expect(afterWidth, 'to equal', activeWidth);
+          expect(afterWidth, 'not to equal', beforeWidth);
+          document.body.removeChild(iframe);
+          done();
+        }, 0);
+      }, function () {
+        document.body.removeChild(iframe);
+        done(new Error('Timeout'));
+      });
+    });
+
+    it("finds a font and resolves the promise even though the @font-face rule is not in the CSSOM yet", function (done) {
       var observer = new FontFaceObserver("observer-test9", {}),
         ruler = new Ruler("hello");
 
@@ -114,12 +166,12 @@ describe("Observer", function() {
       ruler.setFont("100px observer-test9, monospace");
 
       observer.load(null, 10000).then(
-        function() {
+        function () {
           var activeWidth = ruler.getWidth();
 
           expect(activeWidth, "not to equal", beforeWidth);
 
-          setTimeout(function() {
+          setTimeout(function () {
             var afterWidth = ruler.getWidth();
 
             expect(afterWidth, "to equal", activeWidth);
@@ -128,7 +180,7 @@ describe("Observer", function() {
             done();
           }, 0);
         },
-        function() {
+        function () {
           done(new Error("Timeout"));
         }
       );
@@ -143,7 +195,7 @@ describe("Observer", function() {
       document.head.appendChild(link);
     });
 
-    it("finds a font and resolve the promise even when the page is RTL", function(done) {
+    it("finds a font and resolve the promise even when the page is RTL", function (done) {
       var observer = new FontFaceObserver("observer-test8", {}),
         ruler = new Ruler("hello");
 
@@ -155,12 +207,12 @@ describe("Observer", function() {
 
       ruler.setFont("100px observer-test1, monospace");
       observer.load(null, 5000).then(
-        function() {
+        function () {
           var activeWidth = ruler.getWidth();
 
           expect(activeWidth, "not to equal", beforeWidth);
 
-          setTimeout(function() {
+          setTimeout(function () {
             var afterWidth = ruler.getWidth();
 
             expect(afterWidth, "to equal", activeWidth);
@@ -170,13 +222,13 @@ describe("Observer", function() {
             done();
           }, 0);
         },
-        function() {
+        function () {
           done(new Error("Timeout"));
         }
       );
     });
 
-    it("finds a font with spaces in the name and resolve the promise", function(done) {
+    it("finds a font with spaces in the name and resolve the promise", function (done) {
       var observer = new FontFaceObserver("Trebuchet W01 Regular", {}),
         ruler = new Ruler("hello");
 
@@ -187,12 +239,12 @@ describe("Observer", function() {
 
       ruler.setFont('100px "Trebuchet W01 Regular", monospace');
       observer.load(null, 5000).then(
-        function() {
+        function () {
           var activeWidth = ruler.getWidth();
 
           expect(activeWidth, "not to equal", beforeWidth);
 
-          setTimeout(function() {
+          setTimeout(function () {
             var afterWidth = ruler.getWidth();
 
             expect(afterWidth, "to equal", activeWidth);
@@ -201,13 +253,13 @@ describe("Observer", function() {
             done();
           }, 0);
         },
-        function() {
+        function () {
           done(new Error("Timeout"));
         }
       );
     });
 
-    it("loads a font with spaces and numbers in the name and resolve the promise", function(done) {
+    it("loads a font with spaces and numbers in the name and resolve the promise", function (done) {
       var observer = new FontFaceObserver("Neue Frutiger 1450 W04", {}),
         ruler = new Ruler("hello");
 
@@ -218,12 +270,12 @@ describe("Observer", function() {
 
       ruler.setFont('100px "Neue Frutiger 1450 W04", monospace');
       observer.load(null, 5000).then(
-        function() {
+        function () {
           var activeWidth = ruler.getWidth();
 
           expect(activeWidth, "not to equal", beforeWidth);
 
-          setTimeout(function() {
+          setTimeout(function () {
             var afterWidth = ruler.getWidth();
 
             expect(afterWidth, "to equal", activeWidth);
@@ -232,20 +284,20 @@ describe("Observer", function() {
             done();
           }, 0);
         },
-        function() {
+        function () {
           done(new Error("Timeout"));
         }
       );
     });
 
-    it("fails to find a font and reject the promise", function(done) {
+    it("fails to find a font and reject the promise", function (done) {
       var observer = new FontFaceObserver("observer-test2", {});
 
       observer.load(null, 50).then(
-        function() {
+        function () {
           done(new Error("Should not resolve"));
         },
-        function(err) {
+        function (err) {
           try {
             expect(err.message, "to equal", "50ms timeout exceeded");
             expect(err.constructor.name, "to equal", "Error");
@@ -257,35 +309,35 @@ describe("Observer", function() {
       );
     });
 
-    it("finds the font even if it is already loaded", function(done) {
+    it("finds the font even if it is already loaded", function (done) {
       var observer = new FontFaceObserver("observer-test3", {});
 
-      observer.load(null, 5000).then(function() {
+      observer.load(null, 5000).then(function () {
         done();
       });
     });
 
-    it("finds the font even if it is already loaded", function(done) {
+    it("finds the font even if it is already loaded", function (done) {
       var observer = new FontFaceObserver("observer-test3", {});
 
       observer.load(null, 5000).then(
-        function() {
+        function () {
           observer.load(null, 5000).then(
-            function() {
+            function () {
               done();
             },
-            function() {
+            function () {
               done(new Error("Second call failed"));
             }
           );
         },
-        function() {
+        function () {
           done(new Error("Timeout"));
         }
       );
     });
 
-    it("finds a font with a custom unicode range within ASCII", function(done) {
+    it("finds a font with a custom unicode range within ASCII", function (done) {
       var observer = new FontFaceObserver("observer-test4", {}),
         ruler = new Ruler("\u0021");
 
@@ -297,12 +349,12 @@ describe("Observer", function() {
       ruler.setFont("100px observer-test4,monospace");
 
       observer.load("\u0021", 5000).then(
-        function() {
+        function () {
           var activeWidth = ruler.getWidth();
 
           expect(activeWidth, "not to equal", beforeWidth);
 
-          setTimeout(function() {
+          setTimeout(function () {
             var afterWidth = ruler.getWidth();
 
             expect(afterWidth, "to equal", activeWidth);
@@ -312,13 +364,13 @@ describe("Observer", function() {
             done();
           }, 0);
         },
-        function() {
+        function () {
           done(new Error("Timeout"));
         }
       );
     });
 
-    it("finds a font with a custom unicode range outside ASCII (but within BMP)", function(done) {
+    it("finds a font with a custom unicode range outside ASCII (but within BMP)", function (done) {
       var observer = new FontFaceObserver("observer-test5", {}),
         ruler = new Ruler("\u4e2d\u56fd");
 
@@ -330,12 +382,12 @@ describe("Observer", function() {
       ruler.setFont("100px observer-test5,monospace");
 
       observer.load("\u4e2d\u56fd", 5000).then(
-        function() {
+        function () {
           var activeWidth = ruler.getWidth();
 
           expect(activeWidth, "not to equal", beforeWidth);
 
-          setTimeout(function() {
+          setTimeout(function () {
             var afterWidth = ruler.getWidth();
 
             expect(afterWidth, "to equal", activeWidth);
@@ -346,13 +398,13 @@ describe("Observer", function() {
             done();
           }, 0);
         },
-        function() {
+        function () {
           done(new Error("Timeout"));
         }
       );
     });
 
-    it("finds a font with a custom unicode range outside the BMP", function(done) {
+    it("finds a font with a custom unicode range outside the BMP", function (done) {
       var observer = new FontFaceObserver("observer-test6", {}),
         ruler = new Ruler("\udbff\udfff");
 
@@ -364,12 +416,12 @@ describe("Observer", function() {
       ruler.setFont("100px observer-test6,monospace");
 
       observer.load("\udbff\udfff", 5000).then(
-        function() {
+        function () {
           var activeWidth = ruler.getWidth();
 
           expect(activeWidth, "not to equal", beforeWidth);
 
-          setTimeout(function() {
+          setTimeout(function () {
             var afterWidth = ruler.getWidth();
 
             expect(afterWidth, "to equal", activeWidth);
@@ -380,20 +432,20 @@ describe("Observer", function() {
             done();
           }, 0);
         },
-        function() {
+        function () {
           done(new Error("Timeout"));
         }
       );
     });
 
-    it("fails to find the font if it is available but does not contain the test string", function(done) {
+    it("fails to find the font if it is available but does not contain the test string", function (done) {
       var observer = new FontFaceObserver("observer-test7", {});
 
       observer.load(null, 50).then(
-        function() {
+        function () {
           done(new Error("Should not be called"));
         },
-        function() {
+        function () {
           done();
         }
       );
@@ -426,12 +478,12 @@ describe("Observer", function() {
     // });
   });
 
-  describe("hasSafari10Bug", function() {
+  describe("hasSafari10Bug", function () {
     var getUserAgent = null;
     var getNavigatorVendor = null;
     var supportsNativeFontLoading = null;
 
-    beforeEach(function() {
+    beforeEach(function () {
       FontFaceObserver.HAS_SAFARI_10_BUG = null;
 
       getUserAgent = sinon.stub(FontFaceObserver, "getUserAgent");
@@ -442,13 +494,13 @@ describe("Observer", function() {
       );
     });
 
-    afterEach(function() {
+    afterEach(function () {
       getUserAgent.restore();
       getNavigatorVendor.restore();
       supportsNativeFontLoading.restore();
     });
 
-    it("returns false when the user agent is not WebKit", function() {
+    it("returns false when the user agent is not WebKit", function () {
       getUserAgent.returns(
         "Mozilla/5.0 (Android; Mobile; rv:13.0) Gecko/15.0 Firefox/14.0"
       );
@@ -458,7 +510,7 @@ describe("Observer", function() {
       expect(FontFaceObserver.hasSafari10Bug(), "to be false");
     });
 
-    it("returns true if the browser is an affected version of Safari 10", function() {
+    it("returns true if the browser is an affected version of Safari 10", function () {
       getUserAgent.returns(
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/602.2.14 (KHTML, like Gecko) Version/10.0.1 Safari/602.2.14"
       );
@@ -468,7 +520,7 @@ describe("Observer", function() {
       expect(FontFaceObserver.hasSafari10Bug(), "to be true");
     });
 
-    it("returns true if the browser is an WebView with an affected version of Safari 10", function() {
+    it("returns true if the browser is an WebView with an affected version of Safari 10", function () {
       getUserAgent.returns(
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/602.2.14 (KHTML, like Gecko) FxiOS/6.1 Safari/602.2.14"
       );
@@ -478,7 +530,7 @@ describe("Observer", function() {
       expect(FontFaceObserver.hasSafari10Bug(), "to be true");
     });
 
-    it("returns false in older versions of Safari", function() {
+    it("returns false in older versions of Safari", function () {
       getUserAgent.returns(
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.75.14 (KHTML, like Gecko) Version/9.3.2 Safari/537.75.14"
       );
@@ -488,7 +540,7 @@ describe("Observer", function() {
       expect(FontFaceObserver.hasSafari10Bug(), "to be false");
     });
 
-    it("returns false in newer versions of Safari", function() {
+    it("returns false in newer versions of Safari", function () {
       getUserAgent.returns(
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/603.1.20 (KHTML, like Gecko) Version/10.1 Safari/603.1.20"
       );
@@ -499,20 +551,20 @@ describe("Observer", function() {
     });
   });
 
-  describe("hasWebKitFallbackBug", function() {
+  describe("hasWebKitFallbackBug", function () {
     var getUserAgent = null;
 
-    beforeEach(function() {
+    beforeEach(function () {
       FontFaceObserver.HAS_WEBKIT_FALLBACK_BUG = null;
 
       getUserAgent = sinon.stub(FontFaceObserver, "getUserAgent");
     });
 
-    afterEach(function() {
+    afterEach(function () {
       getUserAgent.restore();
     });
 
-    it("returns false when the user agent is not WebKit", function() {
+    it("returns false when the user agent is not WebKit", function () {
       getUserAgent.returns(
         "Mozilla/5.0 (Android; Mobile; rv:13.0) Gecko/15.0 Firefox/14.0"
       );
@@ -520,7 +572,7 @@ describe("Observer", function() {
       expect(FontFaceObserver.hasWebKitFallbackBug(), "to be false");
     });
 
-    it("returns false when the user agent is WebKit but the bug is not present", function() {
+    it("returns false when the user agent is WebKit but the bug is not present", function () {
       getUserAgent.returns(
         "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/536.12 (KHTML, like Gecko) Chrome/20.0.814.2 Safari/536.12"
       );
@@ -528,7 +580,7 @@ describe("Observer", function() {
       expect(FontFaceObserver.hasWebKitFallbackBug(), "to be false");
     });
 
-    it("returns true when the user agent is WebKit and the bug is present", function() {
+    it("returns true when the user agent is WebKit and the bug is present", function () {
       getUserAgent.returns(
         "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/536.11 (KHTML, like Gecko) Chrome/20.0.814.2 Safari/536.11"
       );
@@ -536,7 +588,7 @@ describe("Observer", function() {
       expect(FontFaceObserver.hasWebKitFallbackBug(), "to be true");
     });
 
-    it("returns true when the user agent is WebKit and the bug is present in an old version", function() {
+    it("returns true when the user agent is WebKit and the bug is present in an old version", function () {
       getUserAgent.returns(
         "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/20.0.814.2 Safari/535.19"
       );
@@ -544,7 +596,7 @@ describe("Observer", function() {
       expect(FontFaceObserver.hasWebKitFallbackBug(), "to be true");
     });
 
-    it("caches the results", function() {
+    it("caches the results", function () {
       getUserAgent.returns(
         "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/536.11 (KHTML, like Gecko) Chrome/20.0.814.2 Safari/536.11"
       );

@@ -296,9 +296,9 @@ function () {
 
   }, {
     key: "hasSafari10Bug",
-    value: function hasSafari10Bug() {
+    value: function hasSafari10Bug(context) {
       if (FontFaceObserver.HAS_SAFARI_10_BUG === null) {
-        if (FontFaceObserver.supportsNativeFontLoading() && /Apple/.test(FontFaceObserver.getNavigatorVendor())) {
+        if (FontFaceObserver.supportsNativeFontLoading(context) && /Apple/.test(FontFaceObserver.getNavigatorVendor())) {
           var match = /AppleWebKit\/([0-9]+)(?:\.([0-9]+))(?:\.([0-9]+))/.exec(FontFaceObserver.getUserAgent());
           FontFaceObserver.HAS_SAFARI_10_BUG = !!match && parseInt(match[1], 10) < 603;
         } else {
@@ -316,9 +316,9 @@ function () {
 
   }, {
     key: "supportsNativeFontLoading",
-    value: function supportsNativeFontLoading() {
+    value: function supportsNativeFontLoading(context) {
       if (FontFaceObserver.SUPPORTS_NATIVE_FONT_LOADING === null) {
-        FontFaceObserver.SUPPORTS_NATIVE_FONT_LOADING = !!document["fonts"];
+        FontFaceObserver.SUPPORTS_NATIVE_FONT_LOADING = !!context.document["fonts"];
       }
 
       return FontFaceObserver.SUPPORTS_NATIVE_FONT_LOADING;
@@ -364,6 +364,7 @@ function () {
 
   function FontFaceObserver(family) {
     var descriptors = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var opt_context = arguments.length > 2 ? arguments[2] : undefined;
 
     _classCallCheck(this, FontFaceObserver);
 
@@ -371,6 +372,7 @@ function () {
     this.style = descriptors.style || "normal";
     this.weight = descriptors.weight || "normal";
     this.stretch = descriptors.stretch || "normal";
+    this.context = opt_context || window;
     return this;
   }
   /**
@@ -391,7 +393,7 @@ function () {
       var timeoutValue = timeout || FontFaceObserver.DEFAULT_TIMEOUT;
       var start = that.getTime();
       return new Promise(function (resolve, reject) {
-        if (FontFaceObserver.supportsNativeFontLoading() && !FontFaceObserver.hasSafari10Bug()) {
+        if (FontFaceObserver.supportsNativeFontLoading(that.context) && !FontFaceObserver.hasSafari10Bug(that.context)) {
           var loader = new Promise(function (resolve, reject) {
             var check = function check() {
               var now = that.getTime();
@@ -399,7 +401,7 @@ function () {
               if (now - start >= timeoutValue) {
                 reject(new Error("" + timeoutValue + "ms timeout exceeded"));
               } else {
-                document.fonts.load(that.getStyle('"' + that["family"] + '"'), testString).then(function (fonts) {
+                that.context.document.fonts.load(that.getStyle('"' + that["family"] + '"'), testString).then(function (fonts) {
                   if (fonts.length >= 1) {
                     resolve();
                   } else {
@@ -493,7 +495,7 @@ function () {
             container.appendChild(rulerA.getElement());
             container.appendChild(rulerB.getElement());
             container.appendChild(rulerC.getElement());
-            document.body.appendChild(container);
+            that.context.document.body.appendChild(container);
             fallbackWidthA = rulerA.getWidth();
             fallbackWidthB = rulerB.getWidth();
             fallbackWidthC = rulerC.getWidth();
@@ -505,7 +507,7 @@ function () {
                 removeContainer();
                 reject(new Error("" + timeoutValue + "ms timeout exceeded"));
               } else {
-                var hidden = document["hidden"];
+                var hidden = that.context.document["hidden"];
 
                 if (hidden === true || hidden === undefined) {
                   widthA = rulerA.getWidth();
