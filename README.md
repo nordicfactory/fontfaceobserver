@@ -2,11 +2,6 @@
 This is a forked repo
 
 # Font Face Observer
-
-[![Build Status](https://travis-ci.org/dmnsgn/fontfaceobserver.svg?branch=master)](https://travis-ci.org/dmnsgn/fontfaceobserver)
-[![npm version](https://badge.fury.io/js/fontfaceobserver.svg)](https://www.npmjs.com/package/fontfaceobserver-es)
-[![styled with prettier](https://img.shields.io/badge/styled_with-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
-
 > Font Face Observer is a small `@font-face` loader and monitor (3.5KB minified and 1.3KB gzipped) compatible with any webfont service. It will monitor when a webfont is loaded and notify you. It does not limit you in any way in where, when, or how you load your webfonts. Unlike the [Web Font Loader](https://github.com/typekit/webfontloader) Font Face Observer uses scroll events to detect font loads efficiently and with minimum overhead.
 
 ## Documentation
@@ -31,35 +26,6 @@ var font = new FontFaceObserver("My Family");
 font.load().then(function() {
   console.log("My Family has loaded");
 });
-```
-
-* An ES module bundle (`dist/fontfaceobserver.esm.js`) for the above and also directly in the browser:
-
-```html
-<script type="module" src="https://unpkg.com/fontfaceobserver-es@3.0.0/dist/fontfaceobserver.esm.js"></script>
-```
-
-```js
-import FontFaceObserver from "fontfaceobserver-es";
-
-const font = new FontFaceObserver("My Family");
-
-font.load().then(function() {
-  console.log("My Family has loaded");
-});
-```
-
-* A UMD build (`dist/fontfaceobserver.umd.js`) mainly for browser without ES module support:
-
-```js
-<script src="https://unpkg.com/fontfaceobserver-es@3.0.0/dist/fontfaceobserver.umd.js"></script>
-<script>
-const font = new FontFaceObserver("My Family");
-
-font.load().then(function() {
-  console.log("My Family has loaded");
-});
-</script>
 ```
 
 You'll need to include the required Polyfill for Promise support. See [babel-polyfill](https://babeljs.io/docs/usage/polyfill/) and [core-js](https://github.com/zloirock/core-js#commonjs).
