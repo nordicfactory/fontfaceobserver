@@ -3,25 +3,33 @@ import commonjs from "rollup-plugin-commonjs";
 import babel from "rollup-plugin-babel";
 import { uglify } from "rollup-plugin-uglify";
 import pkg from "./package.json";
+import typescript from '@rollup/plugin-typescript';
 
 const copyright = "© Bram Stein - Damien Seguin. License: BSD-3-Clause";
 const banner = `/* Font Face Observer v${pkg.version} - ${copyright} */`;
 
+const extensions = [
+  '.js', '.jsx', '.ts', '.tsx',
+];
+
 const babelCommonOptions = {
   exclude: ["node_modules/**"],
   plugins: [
+    "@babel/plugin-transform-typescript",
     "@babel/plugin-proposal-class-properties",
     "@babel/plugin-proposal-object-rest-spread"
-  ]
+  ],
+  extensions
 };
 
 const isDev = process.env.NODE_ENV === "development";
 
 export default [
   {
-    input: "src/index.js",
+    input: "src/index.ts",
     plugins: [
-      resolve(),
+      resolve({ extensions }),
+      typescript(),
       babel({
         ...babelCommonOptions,
         presets: [
@@ -47,8 +55,10 @@ export default [
     }
   },
   {
-    input: "src/index.js",
+    input: "src/index.ts",
     plugins: [
+      resolve({ extensions }),
+      typescript(),
       babel({
         ...babelCommonOptions,
         presets: [
@@ -72,8 +82,10 @@ export default [
     }
   },
   {
-    input: "src/index.js",
+    input: "src/index.ts",
     plugins: [
+      resolve({ extensions }),
+      typescript(),
       babel({
         ...babelCommonOptions,
         presets: [

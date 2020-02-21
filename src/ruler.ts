@@ -32,6 +32,13 @@ const fontStyle = {
 };
 
 class Ruler {
+  element: HTMLDivElement;
+  collapsible: HTMLSpanElement;
+  expandable: HTMLSpanElement;
+  collapsibleInner: HTMLSpanElement;
+  expandableInner: HTMLSpanElement;
+  lastOffsetWidth: number;
+  
   /**
    *
    * @param {string} text

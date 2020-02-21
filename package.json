@@ -41,6 +41,7 @@
     "@babel/plugin-proposal-class-properties": "^7.3.4",
     "@babel/plugin-proposal-object-rest-spread": "^7.3.4",
     "@babel/preset-env": "^7.3.4",
+    "@rollup/plugin-typescript": "3.0.0",
     "babel-eslint": "^10.0.1",
     "babel-polyfill": "^6.26.0",
     "eslint": "^5.15.2",
@@ -68,7 +69,8 @@
     "preversion": "npm test && npm run lint",
     "version": "npm run build && npm run docs && git add -A",
     "postversion": "git push && git push --tags && npm publish",
-    "test": "npx phantomjs ./node_modules/mocha-phantomjs-core/mocha-phantomjs-core.js test/index.html spec"
+    "test": "npx phantomjs ./node_modules/mocha-phantomjs-core/mocha-phantomjs-core.js test/index.html spec",
+    "generate-types": "tsc --declaration"
   },
   "eslintConfig": {
     "parser": "babel-eslint",
@@ -88,5 +90,9 @@
   },
   "eslintIgnore": [
     "node_modules"
-  ]
+  ],
+  "dependencies": {
+    "@babel/plugin-transform-typescript": "7.8.3",
+    "typescript": "3.8.2"
+  }
 }

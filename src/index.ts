@@ -1,6 +1,12 @@
 import Ruler from "./ruler.js";
 import { onReady } from "./dom.js";
 
+interface IDescriptors {
+  style: any;
+  weight: any;
+  stretch: any;
+}
+
 /** Class for FontFaceObserver. */
 class FontFaceObserver {
   static Ruler = Ruler;
@@ -29,6 +35,11 @@ class FontFaceObserver {
    * @type {number}
    */
   static DEFAULT_TIMEOUT = 3000;
+  family: any;
+  style: any;
+  weight: any;
+  stretch: any;
+  context: any;
 
   /**
    * @return {string}
@@ -139,11 +150,11 @@ class FontFaceObserver {
   /**
    *
    * @param {string} family font-family name (required)
-   * @param {Descriptors} descriptors an object describing the variation
+   * @param {IDescriptors} descriptors an object describing the variation
    * (optional). The object can contain `weight`, `style`, and `stretch`
    * properties. If a property is not present it will default to `normal`.
    */
-  constructor(family, descriptors = {}, opt_context) {
+  constructor(family, descriptors: IDescriptors = {} as IDescriptors, opt_context) {
     this.family = family;
 
     this.style = descriptors.style || "normal";
@@ -164,7 +175,7 @@ class FontFaceObserver {
   load(text, timeout) {
     const that = this;
     const testString = text || "BESbswy";
-    let timeoutId = 0;
+    let timeoutId: any = 0;
     const timeoutValue = timeout || FontFaceObserver.DEFAULT_TIMEOUT;
     const start = that.getTime();
 
